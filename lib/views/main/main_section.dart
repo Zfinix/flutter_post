@@ -1,31 +1,44 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_post/core/viewmodel/home_vm.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_post/utils/colors.dart';
 import 'package:flutter_post/utils/margin.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+import 'package:line_icons/line_icons.dart';
+import 'package:flutter_post/services/provider_registrar.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'req/request_section.dart';
 import 'res/response_section.dart';
 
-class MainSection extends StatelessWidget {
+class MainSection extends HookWidget {
   @override
   Widget build(BuildContext context) {
-    var provider = context.watch<HomeViewModel>();
+    var provider = useProvider(homeVM);
     return Container(
       height: screenHeight(context),
       child: ListView(
-        padding: EdgeInsets.all(30),
+        padding: EdgeInsets.all(30).add(EdgeInsets.symmetric(horizontal: 30)),
         physics: ClampingScrollPhysics(),
         children: [
-          const YMargin(30),
+          Row(
+            children: [
+              Text(
+                'REQUEST',
+                style: GoogleFonts.lato(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const YMargin(40),
           RequestSection(),
-          const YMargin(20),
+          const YMargin(40),
           Container(
             padding: EdgeInsets.all(20),
-              color: darkGrey,
-            
+            color: cardBg,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -40,21 +53,17 @@ class MainSection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             Text('HEADERS',
-                                style: GoogleFonts.cabin(
+                                style: GoogleFonts.lato(
                                   textStyle: TextStyle(
                                       color: provider.selectedRequestIndex == 0
                                           ? Colors.white
                                           : Colors.white.withOpacity(0.4),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700),
                                 )),
                             const YMargin(10),
                             if (provider.selectedRequestIndex == 0)
-                              Container(
-                                height: 2,
-                                width: 110,
-                                color: Colors.amber,
-                              )
+                              Container(height: 2, width: 80, color: primary)
                           ],
                         ),
                       ),
@@ -65,21 +74,17 @@ class MainSection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             Text('URL PARAMS',
-                                style: GoogleFonts.cabin(
+                                style: GoogleFonts.lato(
                                   textStyle: TextStyle(
                                       color: provider.selectedRequestIndex == 1
                                           ? Colors.white
                                           : Colors.white.withOpacity(0.4),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700),
                                 )),
                             const YMargin(10),
                             if (provider.selectedRequestIndex == 1)
-                              Container(
-                                height: 2,
-                                width: 110,
-                                color: Colors.amber,
-                              )
+                              Container(height: 2, width: 80, color: primary)
                           ],
                         ),
                       ),
@@ -92,21 +97,17 @@ class MainSection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             Text('BODY',
-                                style: GoogleFonts.cabin(
+                                style: GoogleFonts.lato(
                                   textStyle: TextStyle(
                                       color: provider.selectedRequestIndex == 2
                                           ? Colors.white
                                           : Colors.white.withOpacity(0.4),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700),
                                 )),
                             const YMargin(10),
                             if (provider.selectedRequestIndex == 2)
-                              Container(
-                                height: 2,
-                                width: 110,
-                                color: Colors.amber,
-                              )
+                              Container(height: 2, width: 80, color: primary)
                           ],
                         ),
                       ),
@@ -131,20 +132,26 @@ class MainSection extends StatelessWidget {
                     onPressed: () {
                       provider.sendREQ();
                     },
-                    icon: Image.asset(
-                      'assets/images/rocket2.png',
-                      height: 23,
+                    icon: Icon(
+                      LineIcons.rocket,
+                      size: 25,
+                      color: Colors.white,
                     ),
                     label: Text(
-                      'Send Request',
-                      style: TextStyle(color: Colors.white),
+                      'SEND REQUEST',
+                      style: GoogleFonts.lato(
+                        textStyle: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600),
+                      ),
                     ),
                   ),
                 ),
               ),
             ],
           ),
-          const YMargin(35),
+          const YMargin(60),
           ResponseSection(),
           const YMargin(50),
         ],

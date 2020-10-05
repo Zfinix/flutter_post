@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_post/core/viewmodel/home_vm.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_post/utils/colors.dart';
+import 'package:flutter_post/utils/form/json_schema.dart';
 import 'package:flutter_post/utils/margin.dart';
-import 'package:json_to_form/json_schema.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_post/services/provider_registrar.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class UrlParams extends StatefulWidget {
+class UrlParams extends StatefulHookWidget {
   UrlParams({Key key}) : super(key: key);
 
   @override
@@ -14,18 +16,18 @@ class UrlParams extends StatefulWidget {
 class _UrlParamsState extends State<UrlParams> {
   Map decorations = {
     'key': InputDecoration(
-      hintText: 'Key',
+      hintText: 'KEY',
       contentPadding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 5.0),
       filled: true,
-      hintStyle: TextStyle(fontSize: 14, color:Colors.white),
+      hintStyle: TextStyle(fontSize: 11, color: grey),
       fillColor: Color(0xFF2A2C2C),
       border: InputBorder.none,
     ),
     'value': InputDecoration(
-      hintText: 'Value',
+      hintText: 'VALUE',
       contentPadding: EdgeInsets.fromLTRB(20.0, 5.0, 20.0, 5.0),
       filled: true,
-      hintStyle: TextStyle(fontSize: 14, color:Colors.white),
+      hintStyle: TextStyle(fontSize: 11, color: grey),
       fillColor: Color(0xFF2A2C2C),
       border: InputBorder.none,
     ),
@@ -35,13 +37,11 @@ class _UrlParamsState extends State<UrlParams> {
 
   @override
   Widget build(BuildContext context) {
-    var provider = context.watch<HomeViewModel>();
+    var provider = useProvider(homeVM);
     provider.urlParamsForm = JsonSchema(
       decorations: decorations,
       textStyle: TextStyle(
-                            fontWeight: FontWeight.w200,
-                            fontSize: 14,
-                            color: Colors.white),
+          fontWeight: FontWeight.w200, fontSize: 11, color: Colors.white),
       formKey: provider.urlParamsFormKey,
       formMap: provider.formUrlParamsMap(),
       onChanged: (dynamic _) {
@@ -56,9 +56,7 @@ class _UrlParamsState extends State<UrlParams> {
     provider.urlParamsValueForm = JsonSchema(
       decorations: decorations,
       textStyle: TextStyle(
-                            fontWeight: FontWeight.w200,
-                            fontSize: 14,
-                            color: Colors.white),
+          fontWeight: FontWeight.w200, fontSize: 11, color: Colors.white),
       formMap: provider.formUrlParamsValueMap(),
       formKey: provider.urlParamsValueFormKey,
       onChanged: (dynamic _) {
@@ -90,45 +88,78 @@ class _UrlParamsState extends State<UrlParams> {
             ],
           ),
         ),
-        Row(
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.add_circle_outline),
-              onPressed: () {
-                try {
-                  setState(() {
-                    provider.urlParamsFieldList.add({
-                      'key': 'key',
-                      'type': 'TextInput',
-                      'label': '',
-                      'placeholder': "Key",
-                    });
-                    provider.urlParamsFieldValueList.add({
-                      'key': 'value',
-                      'type': 'TextInput',
-                      'label': '',
-                      'placeholder': "Value",
-                    });
-                  });
-                } catch (e) {
-                  print(e.toString());
-                }
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.remove_circle_outline),
-              onPressed: () {
-                try {
-                  setState(() {
-                    provider.urlParamsFieldList.removeLast();
-                    provider.urlParamsFieldValueList.removeLast();
-                  });
-                } catch (e) {
-                  print(e.toString());
-                }
-              },
-            ),
-          ],
+        const YMargin(20),
+        Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: Row(
+            children: <Widget>[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: Material(
+                  color: primary,
+                  child: InkWell(
+                    onTap: () {
+                      try {
+                        setState(() {
+                          provider.urlParamsFieldList.add({
+                            'key': 'key',
+                            'type': 'TextInput',
+                            'label': '',
+                            'placeholder': "Key",
+                          });
+                          provider.urlParamsFieldValueList.add({
+                            'key': 'value',
+                            'type': 'TextInput',
+                            'label': '',
+                            'placeholder': "Value",
+                          });
+                        });
+                      } catch (e) {
+                        print(e.toString());
+                      }
+                    },
+                    child: Container(
+                      height: screenHeight(context, percent: .04),
+                      width: screenHeight(context, percent: .04),
+                      child: Icon(
+                        Icons.add,
+                        size: 17,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const XMargin(20),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: Material(
+                  color: Colors.grey[800],
+                  child: InkWell(
+                    onTap: () {
+                      try {
+                        setState(() {
+                          provider.urlParamsFieldList.removeLast();
+                          provider.urlParamsFieldValueList.removeLast();
+                        });
+                      } catch (e) {
+                        print(e.toString());
+                      }
+                    },
+                    child: Container(
+                      height: screenHeight(context, percent: .04),
+                      width: screenHeight(context, percent: .04),
+                      child: Icon(
+                        Icons.remove,
+                        size: 17,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

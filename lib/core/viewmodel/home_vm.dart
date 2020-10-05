@@ -4,11 +4,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_post/core/data/utils/dynamic_form.dart';
 import 'package:flutter_post/core/models/request_history.dart';
+import 'package:flutter_post/utils/colors.dart';
+import 'package:flutter_post/utils/form/json_schema.dart';
+import 'package:flutter_post/utils/viewer/json_viewer.dart';
+import 'package:flutter_post/views/main/req/body/body.dart';
+import 'package:flutter_post/views/main/req/body/body_section.dart';
 import 'package:flutter_post/views/main/req/headers.dart';
 import 'package:flutter_post/views/main/req/url_params.dart';
 import 'package:flutter_post/views/main/res/response.dart';
-import 'package:json_to_form/json_schema.dart';
-import 'package:json_viewer/json_viewer.dart';
 
 import '../api.dart';
 
@@ -20,6 +23,7 @@ class HomeViewModel extends Api {
 
   JsonSchema headersForm;
   JsonSchema headersValueForm;
+
   JsonSchema urlParamsForm;
   JsonSchema urlParamsValueForm;
 
@@ -53,7 +57,7 @@ class HomeViewModel extends Api {
   List _urlParamsFieldValueList = [
     {'key': 'value', 'type': 'TextInput', 'placeholder': 'Value', 'label': ''}
   ];
-  List<RequestHistory> _requestHistory  = new List();
+  List<RequestHistory> _requestHistory = new List();
   List<RequestHistory> get requestHistory => _requestHistory;
 
   //Header Fields
@@ -76,12 +80,18 @@ class HomeViewModel extends Api {
   Map<dynamic, dynamic> formUrlParamsValueMap() =>
       {'autoValidated': false, 'fields': _urlParamsFieldValueList};
 
-  requestTabs() => [ReqHeaders(), UrlParams(), ReqHeaders()];
+  requestTabs() => [ReqHeaders(), UrlParams(), BodySection()];
+
+  requestBodyTabs() => [ReqBody(), ReqBody(), ReqBody()];
+
   responseTabs() =>
       [RawTab(), Center(child: JsonViewerRoot(jsonObj: _response)), HttpTab()];
 
   int _selectedRequestIndex = 0;
   int get selectedRequestIndex => _selectedRequestIndex;
+
+  int _selectedRequestBodyIndex = 0;
+  int get selectedRequestBodyIndex => _selectedRequestBodyIndex;
 
   int _selectedResponseIndex = 0;
   int get selectedResponseIndex => _selectedResponseIndex;
@@ -116,6 +126,11 @@ class HomeViewModel extends Api {
 
   set selectedRequestIndex(val) {
     _selectedRequestIndex = val;
+    notifyListeners();
+  }
+
+  set selectedRequestBodyIndex(val) {
+    _selectedRequestBodyIndex = val;
     notifyListeners();
   }
 
@@ -157,6 +172,7 @@ class HomeViewModel extends Api {
   sendREQ() async {
     _isWorking = true;
     notifyListeners();
+    setUrlParams();
     switch (_selectedRequestType) {
       case 'GET':
         switch (_selectedRequestIndex) {
@@ -193,21 +209,17 @@ class HomeViewModel extends Api {
     try {
       var r = await http.get(urlTEC.text, formattedHeaders,
           queryParameters: formattedParams);
-     
 
       if (r != null) {
         _responseCode = r?.statusCode.toString();
         _response = json.decode(r.toString());
         _responseHeaders = r.headers.toString();
-        //urlTEC.text = r.request.uri.toString();
-         _requestHistory.add(RequestHistory(
+
+        _requestHistory.add(RequestHistory(
             id: _requestHistory.length + 1,
             url: urlTEC.text,
             statusCode: r?.statusCode,
-            type: _selectedRequestType)); 
-
-        print("Length:");
-      } else {
+            type: _selectedRequestType));
       }
     } catch (e) {
       print(e);
@@ -215,7 +227,6 @@ class HomeViewModel extends Api {
         try {
           _responseCode = e?.response?.statusCode.toString();
           _response = json.decode(e.response.toString());
-          urlTEC.text = e.request.uri.toString();
 
           _requestHistory.add(RequestHistory(
               id: _requestHistory.length + 1,
@@ -242,7 +253,6 @@ class HomeViewModel extends Api {
       if (header.value != null && value.value != null)
         formattedHeaders.addAll({header.value: value.value});
     }
-    notifyListeners();
 
     notifyListeners();
   }
@@ -260,7 +270,39 @@ class HomeViewModel extends Api {
         formattedParams.addAll({key.value: value.value});
     }
     notifyListeners();
-    // return formattedParams.length > 0 ? formattedParams : null;
+  }
+
+  setUrlParams() {
+    var temp = Uri.parse(urlTEC.text).queryParameters;
+
+    if (temp.length >= 1) {
+      formattedParams = temp;
+      urlTEC.text =
+          "${Uri.parse(urlTEC.text).scheme}://${Uri.parse(urlTEC.text).host}/${Uri.parse(urlTEC.text).pathSegments.join('/')}";
+      _urlParamsFieldList = [];
+      _urlParamsFieldValueList = [];
+      notifyListeners();
+      formattedParams.forEach((k, v) {
+        try {
+          _urlParamsFieldList.add({
+            'key': 'key',
+            'type': 'TextInput',
+            'label': '',
+            'value': k,
+            'placeholder': "Key",
+          });
+          _urlParamsFieldValueList.add({
+            'key': 'value',
+            'type': 'TextInput',
+            'label': '',
+            'value': v,
+            'placeholder': "Value",
+          });
+        } catch (e) {
+          print(e.toString());
+        }
+      });
+    }
   }
 
   changeRequestTab(int i) {
@@ -274,6 +316,11 @@ class HomeViewModel extends Api {
       default:
     }
     _selectedRequestIndex = i;
+    notifyListeners();
+  }
+
+  changeRequestBodyTab(int i) {
+    _selectedRequestBodyIndex = i;
     notifyListeners();
   }
 
@@ -294,9 +341,20 @@ class HomeViewModel extends Api {
   getReqHistoryColor(String type) {
     switch (type) {
       case 'GET':
-        return Colors.blue[800];
+        return Color(0xFF55CAD9);
         break;
       default:
     }
   }
+
+  getReqResColor() => responseCode != null &&
+            _responseCode.isNotEmpty &&
+            int.parse(_responseCode) >= 400
+        ? Colors.red
+        : _responseCode != null &&
+                _responseCode.isNotEmpty &&
+                int.parse(_responseCode) >= 200 &&
+                int.parse(_responseCode) < 300
+            ? primary
+            : Colors.blueAccent;
 }

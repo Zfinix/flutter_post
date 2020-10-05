@@ -13,6 +13,7 @@ class HttpWrapper {
   }) async {
     try {
       Log().debug('HttpWrapper.post() -> $url');
+      Log().debug('HttpWrapper.post() -> pararms: $queryParameters');
       return await http.Dio().get(
         url,
         queryParameters: queryParameters,
@@ -64,19 +65,23 @@ class HttpWrapper {
     Map<String, Object> data, {
     Map<String, dynamic> headers,
     Map<String, Object> queryParameters,
+    bool isFormData = false,
+    bool isUrlEncoded = false,
   }) async {
     try {
       Log().debug('HttpWrapper.post() -> $url', data);
       return http.Dio().post(
         url,
-        data: data,
+        data: isFormData ? http.FormData.fromMap(data) : data,
         queryParameters: queryParameters,
         options: http.Options(
             validateStatus: (status) {
               return status < 500;
             },
             headers: headers,
-            contentType: http.Headers.formUrlEncodedContentType),
+            contentType: isUrlEncoded
+                ? http.Headers.formUrlEncodedContentType
+                : http.Headers.jsonContentType),
       );
 
       // If that call was not successful, throw an error.
@@ -86,7 +91,7 @@ class HttpWrapper {
       throw TimeOutException();
     } on http.DioError catch (e) {
       if (e is http.DioError) {
-        //handle DioError here by error type or by error code
+        throw e;
       }
     }
     return null;

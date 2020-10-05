@@ -1,30 +1,31 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter_post/core/viewmodel/home_vm.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_post/utils/colors.dart';
 import 'package:flutter_post/utils/margin.dart';
 import 'package:flutter_post/utils/pretty_json.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_post/services/provider_registrar.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class Response extends StatefulWidget {
+class Response extends StatefulHookWidget {
   @override
   _ResponseState createState() => _ResponseState();
 }
 
-class _ResponseState extends State<Response>{
-
+class _ResponseState extends State<Response> {
   @override
   Widget build(BuildContext context) {
-    var provider = context.watch<HomeViewModel>();
+    var provider = useProvider(homeVM);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const YMargin(20),
+        const YMargin(30),
         Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: 18.0,
+            horizontal: 30,
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               GestureDetector(
                 onTap: () => provider.changeResponseTab(0),
@@ -32,12 +33,12 @@ class _ResponseState extends State<Response>{
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Text('RAW',
-                        style: GoogleFonts.cabin(
+                        style: GoogleFonts.lato(
                           textStyle: TextStyle(
                               color: provider.selectedResponseIndex == 0
-                                 ? Colors.white
+                                  ? Colors.white
                                   : Colors.white.withOpacity(0.4),
-                              fontSize: 13,
+                              fontSize: 11,
                               fontWeight: FontWeight.w800),
                         )),
                     if (provider.selectedResponseIndex == 0)
@@ -46,8 +47,8 @@ class _ResponseState extends State<Response>{
                           const YMargin(10),
                           Container(
                             height: 2,
-                            width: 110,
-                            color: Colors.amber,
+                            width: 80,
+                            color: primary,
                           ),
                         ],
                       )
@@ -61,12 +62,12 @@ class _ResponseState extends State<Response>{
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Text('FORMATTED',
-                        style: GoogleFonts.cabin(
+                        style: GoogleFonts.lato(
                           textStyle: TextStyle(
                               color: provider.selectedResponseIndex == 1
-                                ?  Colors.white
+                                  ? Colors.white
                                   : Colors.white.withOpacity(0.4),
-                              fontSize: 13,
+                              fontSize: 11,
                               fontWeight: FontWeight.w800),
                         )),
                     if (provider.selectedResponseIndex == 1)
@@ -75,8 +76,8 @@ class _ResponseState extends State<Response>{
                           const YMargin(10),
                           Container(
                             height: 2,
-                            width: 110,
-                            color: Colors.amber,
+                            width: 80,
+                            color: primary,
                           ),
                         ],
                       )
@@ -92,12 +93,12 @@ class _ResponseState extends State<Response>{
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     Text('HTTP',
-                        style: GoogleFonts.cabin(
+                        style: GoogleFonts.lato(
                           textStyle: TextStyle(
                               color: provider.selectedResponseIndex == 2
-                                 ? Colors.white
+                                  ? Colors.white
                                   : Colors.white.withOpacity(0.4),
-                              fontSize: 13,
+                              fontSize: 11,
                               fontWeight: FontWeight.w800),
                         )),
                     if (provider.selectedResponseIndex == 2)
@@ -106,8 +107,8 @@ class _ResponseState extends State<Response>{
                           const YMargin(10),
                           Container(
                             height: 2,
-                            width: 110,
-                            color: Colors.amber,
+                            width: 80,
+                            color: primary,
                           ),
                         ],
                       )
@@ -117,17 +118,21 @@ class _ResponseState extends State<Response>{
             ],
           ),
         ),
+     
+        Padding(
+          padding: EdgeInsets.all(30),
+          child: provider.responseTabs()[provider.selectedResponseIndex],
+        ),
         const YMargin(40),
-        provider.responseTabs()[provider.selectedResponseIndex],
       ],
     );
   }
 }
 
-class HttpTab extends StatelessWidget {
+class HttpTab extends HookWidget {
   @override
   Widget build(BuildContext context) {
-    var provider = context.watch<HomeViewModel>();
+    var provider = useProvider(homeVM);
     return provider.response != null
         ? Column(
             children: [
@@ -139,23 +144,22 @@ class HttpTab extends StatelessWidget {
                 ),
               ),
               const YMargin(10),
-             
             ],
           )
         : Container();
   }
 }
 
-class RawTab extends StatelessWidget {
+class RawTab extends HookWidget {
   @override
   Widget build(BuildContext context) {
-    var provider = context.watch<HomeViewModel>();
+    var provider = useProvider(homeVM);
     return provider.response != null
         ? SelectableText(
             '${jsonPretty(provider.response)}',
             style: GoogleFonts.sourceCodePro(
-              textStyle: TextStyle(
-                  fontWeight: FontWeight.w400, color: Colors.white70),
+              textStyle:
+                  TextStyle(fontWeight: FontWeight.w400, color: Colors.white70),
             ),
           )
         : Container();
